@@ -1,0 +1,5 @@
+PREFIX org: <urn:org:>
+SELECT ?person ?name WHERE {
+  ?person org:name ?name .
+  FILTER (?name = "Alice")
+}

@@ -1,0 +1,5 @@
+PREFIX org: <urn:org:>
+SELECT ?person ?city WHERE {
+  ?person org:homeCity ?city .
+  ?city org:country org:usa .
+}

@@ -27,6 +27,12 @@ class QueryResult:
             yield dict(zip(self.columns, row, strict=True))
 
 
+@dataclass(frozen=True, slots=True)
+class ValidationRows:
+    columns: tuple[str, ...]
+    rows: tuple[tuple[Any, ...], ...]
+
+
 class SemanticStore:
     def __init__(self, database: str | Path = ":memory:") -> None:
         self.database = str(database)
@@ -68,3 +74,15 @@ class SemanticStore:
                 )
             ) from exc
         return QueryResult(columns=columns, rows=rows, plan=plan)
+
+    def _fetch_validation_sql(
+        self,
+        sql: str,
+        parameters: tuple[str | None, ...] = (),
+    ) -> ValidationRows:
+        """Execute repository-owned direct SQL for differential validation."""
+        cursor = self._connection.execute(sql, list(parameters))
+        return ValidationRows(
+            columns=tuple(item[0] for item in cursor.description),
+            rows=tuple(cursor.fetchall()),
+        )
