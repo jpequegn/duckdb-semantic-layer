@@ -47,4 +47,5 @@ branch = true
 source = ["duckdb_semantic_layer"]
 
 [tool.coverage.report]
+fail_under = 90
 show_missing = true

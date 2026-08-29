@@ -19,4 +19,7 @@ jobs:
           enable-cache: true
       - run: uv sync --all-groups --locked --no-editable
       - run: uv run ruff check .
-      - run: uv run pytest
+      - run: uv run coverage run -m pytest
+      - run: uv run coverage report
+      - run: uv build
+      - run: uv run semantic-layer demo --output artifacts/demo
