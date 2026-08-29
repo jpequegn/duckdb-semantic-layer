@@ -51,6 +51,9 @@ _SPARQL_GRAMMAR = r"""
 
 _PARSER = Lark(_SPARQL_GRAMMAR, parser="lalr", propagate_positions=True)
 
+MAX_QUERY_BYTES = 64 * 1024
+MAX_GRAPH_PATTERNS = 32
+
 
 @dataclass(frozen=True, slots=True)
 class _PrefixedName:
@@ -224,10 +227,39 @@ def _resolve_query(raw_prefixes: tuple[_RawPrefix, ...], raw: _RawQuery) -> Sele
     )
 
 
-def parse_sparql(text: str, *, source: str | None = None) -> SelectQuery:
+def parse_sparql(
+    text: str,
+    *,
+    source: str | None = None,
+    max_query_bytes: int = MAX_QUERY_BYTES,
+    max_graph_patterns: int = MAX_GRAPH_PATTERNS,
+) -> SelectQuery:
+    query_bytes = len(text.encode("utf-8"))
+    if query_bytes > max_query_bytes:
+        raise SemanticLayerError(
+            Diagnostic(
+                code="SPARQL_QUERY_TOO_LARGE",
+                message=(
+                    f"Query is {query_bytes} bytes; maximum is {max_query_bytes}"
+                ),
+                source=source,
+            )
+        )
     try:
         raw_prefixes, raw_query = _QueryTransformer().transform(_PARSER.parse(text))
-        return _resolve_query(raw_prefixes, raw_query)
+        query = _resolve_query(raw_prefixes, raw_query)
+        if len(query.patterns) > max_graph_patterns:
+            raise SemanticLayerError(
+                Diagnostic(
+                    code="SPARQL_PATTERN_LIMIT",
+                    message=(
+                        f"Query has {len(query.patterns)} graph patterns; "
+                        f"maximum is {max_graph_patterns}"
+                    ),
+                    source=source,
+                )
+            )
+        return query
     except UnexpectedInput as exc:
         raise SemanticLayerError(
             Diagnostic(
