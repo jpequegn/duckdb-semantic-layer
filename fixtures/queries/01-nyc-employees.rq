@@ -1,0 +1,6 @@
+PREFIX org: <urn:org:>
+SELECT ?person ?name WHERE {
+  ?person org:type org:Employee .
+  ?person org:name ?name .
+  ?person org:homeCity org:nyc .
+}

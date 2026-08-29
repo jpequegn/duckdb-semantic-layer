@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from duckdb_semantic_layer.errors import Diagnostic, SemanticLayerError
+from duckdb_semantic_layer.evidence import run_evidence
 from duckdb_semantic_layer.store import QueryResult, SemanticStore
 
 
@@ -50,6 +51,14 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Include parameter values in the local explanation",
     )
+
+    demo = subparsers.add_parser("demo", help="Run differential fixture verification")
+    demo.add_argument(
+        "--fixture",
+        type=Path,
+        default=Path("fixtures/organization.nt"),
+    )
+    demo.add_argument("--output", type=Path, default=Path("artifacts/demo"))
     return parser
 
 
@@ -94,6 +103,15 @@ def _run(args: argparse.Namespace) -> int:
     if args.command is None:
         build_parser().print_help()
         return 0
+
+    if args.command == "demo":
+        report = run_evidence(args.fixture, output_directory=args.output)
+        print(
+            f"{'PASS' if report.passed else 'FAIL'}: "
+            f"{sum(case.matched for case in report.cases)}/{len(report.cases)} "
+            f"differential queries matched; report: {args.output}"
+        )
+        return 0 if report.passed else 1
 
     with SemanticStore(args.db) as store:
         if args.command == "load":

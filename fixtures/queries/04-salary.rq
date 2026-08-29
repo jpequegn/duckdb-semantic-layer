@@ -1,0 +1,5 @@
+PREFIX org: <urn:org:>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?person WHERE {
+  ?person org:salary "150000"^^xsd:integer .
+}

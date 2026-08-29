@@ -1,0 +1,6 @@
+PREFIX org: <urn:org:>
+SELECT ?person ?name WHERE {
+  ?person org:name ?name .
+  ?person org:department ?department .
+  ?department org:name "Engineering" .
+}
