@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "duckdb-semantic-layer"
+version = "0.1.0"
+description = "Explainable RDF and bounded SPARQL queries over DuckDB"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "Julien Pequegnot" }]
+dependencies = [
+  "duckdb>=1.4,<2",
+  "lark>=1.2,<2",
+]
+
+[project.scripts]
+semantic-layer = "duckdb_semantic_layer.cli:main"
+
+[dependency-groups]
+dev = [
+  "coverage>=7.10,<8",
+  "pytest>=8.4,<9",
+  "ruff>=0.12,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/duckdb_semantic_layer"]
+
+[tool.uv]
+package = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.coverage.run]
+branch = true
+source = ["duckdb_semantic_layer"]
+
+[tool.coverage.report]
+show_missing = true
